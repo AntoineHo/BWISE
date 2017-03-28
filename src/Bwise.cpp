@@ -30,7 +30,6 @@ void help(){
 	<<"-p for superReads cleaning threshold (2)"<<endl
 	<<"-c for correction step (max)"<<endl
 	<<"-t for core used (max)"<<endl
-	<<"-i for interactive mode (false)"<<endl
 	;
 }
 
@@ -54,12 +53,11 @@ int main(int argc, char *argv[]) {
 	}
 	string pairedFile(""),unPairedFile(""),workingFolder("."),prefixCommand(""),folderStr(STR(folder)),bgreatArg,bloocooArg,slowParameter(" -slow ");
 	uint kMax(301),solidity(2),superReadsCleaning(2),correctionStep(4),coreUsed(0),unitigFilter(2);
-	bool interactMode(false);
 	if(folderStr!=""){
 		prefixCommand=folderStr+"/";
 	}
 	char c;
-	while ((c = getopt (argc, argv, "u:x:o:s:k:p:c:t:i:S:")) != -1){
+	while ((c = getopt (argc, argv, "u:x:o:s:k:p:c:t:S:")) != -1){
 	switch(c){
 		case 'u':
 			if(not exists_test(optarg)){
@@ -95,11 +93,6 @@ int main(int argc, char *argv[]) {
 			break;
 		case 't':
 			coreUsed=stoi(optarg);
-			break;
-		case 'i':
-			if(strcmp(optarg,"true")==0){
-			  interactMode=true;
-			}
 			break;
 		}
 	}
@@ -214,10 +207,6 @@ int main(int argc, char *argv[]) {
 		solidity=1;
 		end=system_clock::now();
 		cout<<"Step "+to_string(indiceGraph)+" took "<<duration_cast<minutes>(end-start).count()<<" minutes"<<endl;
-		if(interactMode){
-  		cout<<"La pause ..."<<endl;
-	  	cin.get();
-		}
 	}
 
 
