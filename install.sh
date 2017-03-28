@@ -71,20 +71,24 @@ cp numbersToSequences $folder;
 echo PHASE ZERO LAUNCHER: BWISE;
 
 
+echo "Clone Bloocoo"
 git clone --recursive https://github.com/GATB/bloocoo.git >>logCompile 2>>logCompile;
 cd bloocoo;
+echo "Make Bloocoo-32"
 mkdir build32; cd build32;
 cmake -DKSIZE_LIST="32" .. >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
 cp bin/Bloocoo Bloocoo32;
 cp Bloocoo32 $folder;
 cd ..;
+echo "Make Bloocoo-64"
 mkdir build64; cd build64;
 cmake -DKSIZE_LIST="64" .. >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
 cp bin/Bloocoo Bloocoo64;
 cp Bloocoo64 $folder;
 cd ..;
+echo "Make Bloocoo-128"
 mkdir build128; cd build128;
 cmake -DKSIZE_LIST="128" .. >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
@@ -98,7 +102,7 @@ cd ../..;
 echo PHASE ONE, READ CORRECTION: BLOOCOO;
 
 
-
+echo "Clone/Make Bcalm-32 64 128 160 224 256 320 512 1024"
 git clone --recursive https://github.com/GATB/bcalm >>logCompile 2>>logCompile;
 cd bcalm;
 mkdir build; cd build;
@@ -109,7 +113,7 @@ cd ../..;
 echo PHASE TWO, GRAPH CONSTRUCTION: BCALM;
 
 
-
+echo "Clone/Make BGreat"
 git clone https://github.com/Malfoy/BGREAT2 >>logCompile 2>>logCompile;
 cd BGREAT2;
 make -j $threadNumber >>logCompile 2>>logCompile;
@@ -137,6 +141,7 @@ echo PHASE THREE, READ MAPPING ON THE DBG: BGREAT;
 
 
 
+echo "Clone/Make kMill"
 git clone https://github.com/kamimrcht/kMILL >>logCompile 2>>logCompile;
 cd kMILL/src;
 make -j $threadNumber >>logCompile 2>>logCompile;
