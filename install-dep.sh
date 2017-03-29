@@ -40,19 +40,21 @@ BUILD_DIR=${SCRIPT_FOLDER}/build
 [ -d $BUILD_DIR  ] && { rm -rf $BUILD_DIR ; }
 mkdir $BUILD_DIR
 
+PKG_URL=http://gatb-tools.gforge.inria.fr/ci-inria
+
 if [ $OS_NAME == "Linux" ]; then
-  BIN_FOLDER=${SCRIPT_FOLDER}/bin/linux
+  PKG_URL=${PKG_URL}/bwise-bin-dep-linux-gcc48.tgz
 elif [ $OS_NAME == "Darwin" ]; then
-  BIN_FOLDER=${SCRIPT_FOLDER}/bin/osx
+  PKG_URL=${PKG_URL}/bwise-bin-dep-osx-clang6.tgz
 else
   echo "ERROR: unsupported platform: $OS_NAME"
   exit 1
 fi
 
 echo " "
-echo "INFO: BWISE-dep binaries transfered from: '$BIN_FOLDER' to: '$BUILD_DIR'"
-
-cp $BIN_FOLDER/* $BUILD_DIR
+echo "INFO: BWISE-dep binaries retrieved from: $PKG_URL"
+cd $BUILD_DIR
+wget --no-check-certificate ${PKG_URL} -O - | tar xzf -
 
 echo " "
 echo "INFO: Compiling BWISE..."
@@ -64,7 +66,7 @@ make clean > logCompile 2>&1
 # we compile BWISE only
 make LOL=-Dfolder=$BUILD_DIR -j $threadNumber >> logCompile 2>&1
 # ok?
-[ "$?" -ne 0 ] && { echo "ERROR: make failed. Check and fix  reported in: ${SRC_DIR}/logCompile"" ; exit 1 ; }
+[ "$?" -ne 0 ] && { echo "ERROR: make failed. Check and fix errors reported in: ${SRC_DIR}/logCompile" ; exit 1 ; }
 # prepare bin folder
 cp bwise ..
 cp K2000/*.py $BUILD_DIR
