@@ -24,9 +24,11 @@ $ strings /usr/lib/libstdc++.so.6  | grep LIBCXX
  
 The binaries are retrieved and placed here as follows:
 
+```bash
 curl -O http://gatb-tools.gforge.inria.fr/ci-inria/bwise-bin-dep-linux-gcc48.tgz
 tar -zxf bwise-bin-dep-linux-gcc48.tgz
 rm bwise-bin-dep-linux-gcc48.tgz
+```
 
 This prodcedure is done by Genscale team only when needed; _i.e._ when there is an update of one of these tools.
 
