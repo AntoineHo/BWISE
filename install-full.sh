@@ -15,9 +15,9 @@ echo "-t to use multiple thread for compilation (default 8)"
 }
 
 # Default values for arguments
-threadNumber=8
+threadNumber=4
 SCRIPT_DIR=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )
-BIN_DIR=${SCRIPT_FOLDER}/bin
+BIN_DIR=${SCRIPT_FOLDER}/build
 
 # Handle command-line arguments
 while getopts "hf:t:" opt; do
@@ -57,7 +57,7 @@ echo "All binaries will be placed in: $BIN_DIR";
 
 # switch to source directory and make the entire build: BWISE and all
 # its dependencies
-cd src;
+cd ${SCRIPT_DIR}/src;
 
 make LOL=-Dfolder=$BIN_DIR -j $threadNumber >>logCompile 2>>logCompile;
 cp bwise ..;
