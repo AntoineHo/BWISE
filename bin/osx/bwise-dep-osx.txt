@@ -1,0 +1,8 @@
+Bloocoo32:
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+	/usr/lib/libz.1.dylib (compatibility version 1.0.0, current version 1.2.5)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+Darwin ciosx 13.4.0 Darwin Kernel Version 13.4.0: Wed Mar 18 16:20:14 PDT 2015; root:xnu-2422.115.14~1/RELEASE_X86_64 x86_64
+Apple LLVM version 6.0 (clang-600.0.51) (based on LLVM 3.5svn)
+Target: x86_64-apple-darwin13.4.0
+Thread model: posix

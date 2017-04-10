@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# THIS INSTALLATION REQUIRES GCC 4.9 (Linux) or Apple/clang 6 (OSX) and Python 3.
-
+# Script to compile BWise source code only.
+#
+# BWISE dependencies are retrieved from Inria's GATB-Core web site.
+#
+# It requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or Apple/clang 6+ (OSX)
+# as well as Python 3.
+#
 function help {
   echo "BWISE installation script"
   echo "This installation requires GCC>=4.9 (Linux) or Apple/clang 6 (OSX) and Python3"
@@ -52,7 +57,7 @@ else
 fi
 
 echo " "
-echo "INFO: BWISE-dep binaries retrieved from: $PKG_URL"
+echo "INFO: retrieving BWISE-dep binaries from: $PKG_URL"
 cd $BUILD_DIR
 wget --no-check-certificate ${PKG_URL} -O - | tar xzf -
 
@@ -75,5 +80,5 @@ cp numbersFilter $BUILD_DIR
 cp numbersToSequences $BUILD_DIR
 make clean >> logCompile 2>&1
 
-echo "INFO: bwise binary available in $SCRIPT_FOLDER"
+echo "INFO: 'bwise' binary available in $SCRIPT_FOLDER"
 

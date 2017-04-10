@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# THIS INSTALLATION REQUIRES GCC 4.9 (Linux) or Apple/clang 6 (OSX) and Python 3.
+# Script to compile BWise source code only.
+#
+# BWISE dependencies are retrieved from 'bin' directory which contains pre-compiled
+# binaries for Linux and OSX.
+#
+# It requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or Apple/clang 6+ (OSX)
+# as well as Python 3.
+#
 
 function help {
   echo "BWISE installation script"
@@ -64,7 +71,8 @@ make clean > logCompile 2>&1
 # we compile BWISE only
 make LOL=-Dfolder=$BUILD_DIR -j $threadNumber >> logCompile 2>&1
 # ok?
-[ "$?" -ne 0 ] && { echo "ERROR: make failed. Check and fix  reported in: ${SRC_DIR}/logCompile"" ; exit 1 ; }
+[ "$?" -ne 0 ] && { echo "ERROR: make failed. Check and fix errors reported in: ${SRC_DIR}/logCompile" ; exit 1 ; }
+
 # prepare bin folder
 cp bwise ..
 cp K2000/*.py $BUILD_DIR
