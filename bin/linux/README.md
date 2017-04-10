@@ -1,10 +1,10 @@
-== Comment
+## Comment
 
 This folder contains pre-compiled binary of BWISE dependencies for Linux.
 
 These binaries are build on [Inria/Jenkins platform](https://ci.inria.fr/gatb-core/view/BWISE/) using a Fedora 20 system running gcc 4.8.
 
-== Requirements
+## Requirements
 
 To use these tools, your Linux system should have to provide you with a libc++ release GLIBCXX_3.4.15 minimum.
 
@@ -20,7 +20,7 @@ $ strings /usr/lib/libstdc++.so.6  | grep LIBCXX
 # Your system is OK if you the above command dumps GLIBCXX_3.4.15
 ```
 
-== Install procedure
+## Install procedure
  
 The binaries are retrieved and placed here as follows:
 
