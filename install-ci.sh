@@ -2,11 +2,13 @@
 
 # Script to compile BWise source code only.
 #
-# BWISE dependencies are retrieved from Inria's GATB-Core web site.
+# BWISE dependencies are retrieved from Inria's GATB-Core Continuous Integration
+# platform. This feature ebnables to retrieve the latest binaries dep of BWISE.
 #
 # It requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or Apple/clang 6+ (OSX)
 # as well as Python 3.
 #
+
 function help {
   echo "BWISE installation script"
   echo "This installation requires GCC>=4.9 (Linux) or Apple/clang 6 (OSX) and Python3"
