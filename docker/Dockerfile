@@ -2,6 +2,9 @@
 #
 #  Docker file for BWISE project.
 #
+#  It prepares a Docker container by compiling only BWISE source code.
+#  Dependencies are retrieved from Inria's GATB-Core Continuous Integration platform.
+#
 #########################################################################################
 #
 # Docker build command:
@@ -80,24 +83,26 @@ RUN apt-get install -y --no-install-recommends \
 RUN apt-get install -y python3 python3-dev python3-pip \
     && apt-get clean
 
+ENV BWISE_BRANCH=docker
+
 # ###
-#     Build BWISE
+#     Build and test BWISE
 #
 RUN cd /opt \
     && git clone https://github.com/Malfoy/BWISE.git \
     && cd BWISE \
-    && git checkout docker 
+    && git checkout ${BWISE_BRANCH} \
+    && ./install.sh -t ${NB_CORES} \
+    && cd /opt/BWISE/data \
+    && ./test.sh \
+    && rm -rf folderTest
 
-RUN cd /opt/BWISE && ./install-dep.sh -t ${NB_CORES} \
-    && cd /opt/BWISE/src && make clean
+#RUN apt-get purge -y gcc-${GCC_VERSION} git wget make && apt-get clean
 
-RUN apt-get purge -y gcc-${GCC_VERSION} git wget make && apt-get clean
-
-#RUN cd /opt/BWISE/data && ./test.sh && rm -rf folderTest
 
 # ###
 #
 # Start BWise
 #
-#ENTRYPOINT ["/opt/BWISE/bwise"]
+ENTRYPOINT ["/opt/BWISE/bwise"]
 
