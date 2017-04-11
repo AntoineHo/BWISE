@@ -3,8 +3,10 @@
 # Script to compile BWise source code and all its dependencies from
 # their respective project. 
 #
-# It requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or Apple/clang 6+ (OSX),
-# as well as git and cmake 3.1+.
+# Compiling BWISE requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or 
+# Apple/clang 6+ (OSX) as well as Python 3. 
+#
+# Git and CMake (3.1+) are also required.
 #
 
 function help {
@@ -17,7 +19,7 @@ echo "-t to use multiple thread for compilation (default 8)"
 # Default values for arguments
 threadNumber=4
 SCRIPT_DIR=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )
-BIN_DIR=${SCRIPT_FOLDER}/build
+BUILD_DIR=${SCRIPT_DIR}/build
 
 # Handle command-line arguments
 while getopts "hf:t:" opt; do
@@ -27,86 +29,92 @@ help
 exit
 ;;
 f)
-echo "use folder: $OPTARG" >&2
-BIN_DIR=$OPTARG
+echo "INFO: use folder: $OPTARG" >&2
+BUILD_DIR=$OPTARG
 ;;
 t)
-echo "use  $OPTARG threads" >&2
+echo "INFO: use $OPTARG threads" >&2
 threadNumber=$OPTARG
 ;;
 \?)
-echo "Invalid option: -$OPTARG" >&2
+echo "ERROR: Invalid option: -$OPTARG" >&2
 exit 1
 ;;
 :)
-echo "Option -$OPTARG requires an argument." >&2
+echo "ERROR: Option -$OPTARG requires an argument." >&2
 exit 1
 ;;
 esac
 done
 
 # No build directory? Error.
-if [ -z "$BIN_DIR"  ]; then
+if [ -z "$BUILD_DIR"  ]; then
 	help
 	exit 0
 	fi
 
 # make the build directory if it does not exist
-mkdir -p $BIN_DIR;
-echo "All binaries will be placed in: $BIN_DIR";
+mkdir -p $BUILD_DIR;
+echo "INFO: all binaries will be placed in: $BUILD_DIR";
 
 # switch to source directory and make the entire build: BWISE and all
 # its dependencies
 cd ${SCRIPT_DIR}/src;
 
-make LOL=-Dfolder=$BIN_DIR -j $threadNumber >>logCompile 2>>logCompile;
+echo "INFO: compiling BWISE..."
+make LOL=-Dfolder=$BUILD_DIR -j $threadNumber >>logCompile 2>>logCompile;
 cp bwise ..;
-cp K2000/*.py $BIN_DIR;
-cp sequencesToNumbers $BIN_DIR;
-cp numbersFilter $BIN_DIR;
-cp numbersToSequences $BIN_DIR;
-echo PHASE ZERO LAUNCHER: BWISE;
+cp K2000/*.py $BUILD_DIR;
+cp sequencesToNumbers $BUILD_DIR;
+cp numbersFilter $BUILD_DIR;
+cp numbersToSequences $BUILD_DIR;
+cp n50 $BUILD_DIR
 
-echo "Clone Bloocoo"
+echo ""
+echo "INFO: cloning Bloocoo..."
 git clone --recursive https://github.com/GATB/bloocoo.git >>logCompile 2>>logCompile;
 cd bloocoo;
-echo "Make Bloocoo-32"
+echo "INFO: compiling Bloocoo-32..."
 mkdir build32; cd build32;
 cmake -DKSIZE_LIST="32" .. >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
 cp bin/Bloocoo Bloocoo32;
-cp Bloocoo32 $BIN_DIR;
+cp Bloocoo32 $BUILD_DIR;
 cd ..;
-echo "Make Bloocoo-64"
+echo "INFO: compiling Bloocoo-64..."
 mkdir build64; cd build64;
 cmake -DKSIZE_LIST="64" .. >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
 cp bin/Bloocoo Bloocoo64;
-cp Bloocoo64 $BIN_DIR;
+cp Bloocoo64 $BUILD_DIR;
 cd ..;
-echo "Make Bloocoo-128"
+echo "INFO: compiling Bloocoo-128..."
 mkdir build128; cd build128;
 cmake -DKSIZE_LIST="128" .. >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
 cp bin/Bloocoo Bloocoo128;
-cp Bloocoo128 $BIN_DIR;
+cp Bloocoo128 $BUILD_DIR;
 cd ../..;
-#~ cp bloocoo/build32/ext/gatb-core/bin/h5dump $BIN_DIR;
+#~ cp bloocoo/build32/ext/gatb-core/bin/h5dump $BUILD_DIR;
 
-echo "Clone/Make Bcalm-32 64 128 160 224 256 320 512 1024"
+echo ""
+echo "INFO: cloning Bclam..."
 git clone --recursive https://github.com/GATB/bcalm >>logCompile 2>>logCompile;
 cd bcalm;
+echo "INFO: compiling Bcalm-32 64 128 160 224 256 320 512 1024..."
 mkdir build; cd build;
 cmake -DKSIZE_LIST="32 64 128 160 224 256 320 512 1024"  ..  >>logCompile 2>>logCompile;
 make -j $threadNumber >>logCompile 2>>logCompile;
-cp bcalm $BIN_DIR;
+cp bcalm $BUILD_DIR;
 cd ../..;
 
-echo "Clone/Make BGreat"
+echo ""
+echo "INFO: cloning BGREAT2..."
 git clone https://github.com/Malfoy/BGREAT2 >>logCompile 2>>logCompile;
 cd BGREAT2;
+echo "INFO: compiling BGREAT2..."
 make -j $threadNumber >>logCompile 2>>logCompile;
-cp bgreat $BIN_DIR;
+cp bgreat $BUILD_DIR;
 cd ..;
 
 #~ git clone --recursive https://github.com/Malfoy/BREADY >>logCompile 2>>logCompile;
@@ -114,24 +122,26 @@ cd ..;
 #~ mkdir build; cd build;
 #~ cmake .. >>logCompile 2>>logCompile;
 #~ make -j $threadNumber >>logCompile 2>>logCompile;
-#~ cp bin/BREADY $BIN_DIR;
+#~ cp bin/BREADY $BUILD_DIR;
 #~ cd ../..;
 #~ git clone --recursive https://github.com/GATB/dsk.git >>logCompile 2>>logCompile;
 #~ cd dsk;
 #~ mkdir build;  cd build;
 #~ cmake -DKSIZE_LIST="32" .. >>logCompile 2>>logCompile;
 #~ make -j $threadNumber >>logCompile 2>>logCompile;
-#~ cp bin/dsk $BIN_DIR;
+#~ cp bin/dsk $BUILD_DIR;
 #~ cd ../..;
 #~ echo PHASE FOUR, SUPERREADS CLEANING: BREADY;
 
-echo "Clone/Make kMill"
+echo ""
+echo "INFO: cloning kMILL..."
 git clone https://github.com/kamimrcht/kMILL >>logCompile 2>>logCompile;
 cd kMILL/src;
+echo "INFO: compiling kMILL..."
 make -j $threadNumber >>logCompile 2>>logCompile;
-cp kMILL $BIN_DIR;
-cp sequencesCleaner $BIN_DIR;
-cp tipCleaner $BIN_DIR;
+cp kMILL $BUILD_DIR;
+cp sequencesCleaner $BUILD_DIR;
+cp tipCleaner $BUILD_DIR;
 cd ../..;
 
 echo "DONE: 'bwise' binary available in $SCRIPT_FOLDER"

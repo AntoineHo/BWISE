@@ -5,8 +5,8 @@
 # BWISE dependencies are retrieved from 'bin' directory which contains pre-compiled
 # binaries for Linux and OSX.
 #
-# It requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or Apple/clang 6+ (OSX)
-# as well as Python 3.
+# Compiling BWISE requires a c++/11 aware compiler; e.g. gcc 4.8+ (Linux) or 
+# Apple/clang 6+ (OSX) as well as Python 3.
 #
 
 function help {
@@ -79,6 +79,7 @@ cp K2000/*.py $BUILD_DIR
 cp sequencesToNumbers $BUILD_DIR
 cp numbersFilter $BUILD_DIR
 cp numbersToSequences $BUILD_DIR
+cp n50 $BUILD_DIR
 make clean >> logCompile 2>&1
 
 echo "INFO: bwise binary available in $SCRIPT_FOLDER"
