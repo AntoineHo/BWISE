@@ -16,7 +16,7 @@ fi
 if [ -f "$DIRECTORY/contigs.fa" ];
 then
   echo "IT WORKS !";
-  ../src/n50 $DIRECTORY/contigs.fa;
+  ../build/n50 $DIRECTORY/contigs.fa;
 else
    echo "FAIL"
 fi
