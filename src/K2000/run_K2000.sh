@@ -30,7 +30,7 @@ echo "*** REMOVE DUPLICATES AND COMPACT MAXIMAL SUPER READS *******"
 # fi
 
 # BACKTOBWISE: COMMENT THESE NEXT NINE LINES
-for min_overlap in 51 101 151 201; do       # TODO: input list
+for min_overlap in 51 251; do       # TODO: input list
     echo ${min_overlap}; 
     python3 ${EDIR}/K2000.py ${in_sr} ${in_unitigs} ${in_k} ${min_overlap} > ${original_in_sr}_compacted_${min_overlap}
     if [ $? -ne 0 ] ; then
