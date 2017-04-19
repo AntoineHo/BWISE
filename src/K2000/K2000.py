@@ -264,9 +264,9 @@ def main():
 
 	if min_conflict_overlap > 0:
 
-        # sys.stderr.write("    Remove dust\r")
-        # SR=remove_dust(SR,unitig_lengths,k,2*min_conflict_overlap)
-        # sys.stderr.write("    Remove dust. Done - nb SR="+ str(len(SR))+"\n")
+		sys.stderr.write("	  Remove dust\r")
+		SR=remove_dust(SR,unitig_lengths,k,2*min_conflict_overlap)
+		sys.stderr.write("	  Remove dust. Done - nb SR="+ str(len(SR))+"\n")
 
 		sys.stderr.write("	Remove redundant overlaps\r")
 		remove_redundant_overlaps(SR,unitig_lengths,k,min_conflict_overlap)
