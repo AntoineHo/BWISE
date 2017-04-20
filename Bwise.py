@@ -98,16 +98,14 @@ def printWarningMsg(msg):
 #									Correction fonction using Bloocoo
 # ############################################################################
 
-def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfiles, toolsArgs, fileCase, nb_correction_steps, OUT_DIR, nb_cores, OUT_LOG_FILES):
+def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfiles, toolsArgs, fileCase, nb_correction_steps, OUT_DIR, nb_cores):
 	try:
 		print("\n" + getTimestamp() + "--> Starting Read Correction with Bloocoo...")
 		slowParameter = " -slow "
 		kmerSizeCorrection = ["31", "63", "95", "127"]
 		bloocooversion = ["32", "64", "128", "128"]
-		os.chdir(OUT_LOG_FILES)
-		logBloocoo = "logBloocoo"
-		logBloocooToWrite = open(logBloocoo, 'w')
-		os.chdir(BWISE_MAIN)
+		logFile = open( OUT_DIR + "/logs", 'w')
+		# os.chdir(BWISE_MAIN)
 		os.chdir(OUT_DIR)
 		indiceCorrection = 0
 		for indiceCorrection in range(min(nb_correction_steps, len(kmerSizeCorrection))):
@@ -118,7 +116,7 @@ def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfile
 			cmd=BWISE_INSTDIR + "/Bloocoo" + bloocooversion[indiceCorrection] + " -file " + toolsArgs['bloocoo'][fileCase] + slowParameter + "-kmer-size " + kmerSizeCorrection[indiceCorrection] + " -nbits-bloom 24  -out reads_corrected" + str(indiceCorrection + 1) + ".fa -nb-cores " + nb_cores
 			print("\tCorrection step " + str(indiceCorrection + 1), flush=True)
 			print( "\t\t"+cmd)
-			p = subprocessLauncher(cmd, logBloocooToWrite, logBloocooToWrite)
+			p = subprocessLauncher(cmd, logFile, logFile)
 			# Deal with files after Bloocoo
 
 			#TODO=put back the histogram creation
@@ -180,6 +178,9 @@ def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfile
 				checkWrittenFiles(OUT_DIR + "/reads_corrected.fa")
 
 		print("\n" + getTimestamp() + "--> Correction Done")
+		cmd="rm -f "+ OUT_DIR + "/reads_corrected*.h5"
+		print("\t\t"+cmd)
+		p = subprocessLauncher(cmd, None, subprocess.DEVNULL)
 	except SystemExit:	# happens when checkWrittenFiles() returns an error
 		sys.exit(1);
 	except KeyboardInterrupt:
@@ -195,12 +196,11 @@ def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfile
 #			   graph generation with BCALM + kMILL + BGREAT
 # ############################################################################
 
-def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, solidity, unitigFilter, superReadsCleaning, toolsArgs, fileCase, nb_cores, OUT_LOG_FILES):
+def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, solidity, unitigFilter, superReadsCleaning, toolsArgs, fileCase, nb_cores):
 	try:
 		print("\n" + getTimestamp() + "--> Starting Graph construction and Super Reads generation...")
-		os.chdir(OUT_LOG_FILES)
-		logs = open("logs", 'w')
-		os.chdir(BWISE_MAIN)
+		logs = open(OUT_DIR+"/logs", 'w')
+		# os.chdir(BWISE_MAIN)
 		os.chdir(OUT_DIR)
 		# indiceGraph = 1
 		# kmerSize = kmerSize
@@ -251,52 +251,52 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 
 		fileBcalm = "compacted_unitigs_k"+kmerSize+".fa";
 
-#         kmerSize="101"
-#         print("\t#Graph Construction second stage... ", flush=True)
+#		kmerSize="51"
+#		print("\t#Graph Construction second stage... ", flush=True)
 #
-#         cmd=BWISE_INSTDIR + "/bcalm -in " + OUT_DIR + "/" + fileBcalm + " -kmer-size " + kmerSize + " -abundance-min 1 -out " + OUT_DIR + "/out2 " + " -nb-cores " + nb_cores
-#         print( "\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#         checkWrittenFiles(OUT_DIR + "/out2.unitigs.fa")
-#             #  Graph Cleaning
-#         print("\t\t #Cleaning... ", flush=True)
+#		cmd=BWISE_INSTDIR + "/bcalm -in " + OUT_DIR + "/" + fileBcalm + " -kmer-size " + kmerSize + " -abundance-min 1 -out " + OUT_DIR + "/out2 " + " -nb-cores " + nb_cores
+#		print( "\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+#		checkWrittenFiles(OUT_DIR + "/out2.unitigs.fa")
+#			  #		Graph Cleaning
+#		print("\t\t #Cleaning... ", flush=True)
 #
-#         # kMILL + tip cleaning
-#         cmd=BWISE_INSTDIR + "/kMILL out2.unitigs.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
-#         print("\t\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#         checkWrittenFiles(OUT_DIR + "/out_out2.unitigs.fa.fa")
-#         cmd=BWISE_INSTDIR + "/tipCleaner out_out2.unitigs.fa.fa "     + str(int(kmerSize) - 1) + " " + str(50+int(kmerSize))
-#         print("\t\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#         checkWrittenFiles(OUT_DIR + "/tiped.fa")
-#         cmd=BWISE_INSTDIR + "/kMILL tiped.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
-#         print("\t\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#         checkWrittenFiles(OUT_DIR + "/out_tiped.fa.fa")
-#         cmd="mv out_tiped.fa.fa dbg_" + str(kmerSize) + ".fa"
-#         print("\t\t\t"+cmd)
-#         p = subprocessLauncher(cmd)
-#         checkWrittenFiles(OUT_DIR + "/dbg_" + str(kmerSize) + ".fa")
+#		# kMILL + tip cleaning
+#		cmd=BWISE_INSTDIR + "/kMILL out2.unitigs.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
+#		print("\t\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+#		checkWrittenFiles(OUT_DIR + "/out_out2.unitigs.fa.fa")
+#		cmd=BWISE_INSTDIR + "/tipCleaner out_out2.unitigs.fa.fa "		   + str(int(kmerSize) - 1) + " " + str(50+int(kmerSize))
+#		print("\t\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+#		checkWrittenFiles(OUT_DIR + "/tiped.fa")
+#		cmd=BWISE_INSTDIR + "/kMILL tiped.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
+#		print("\t\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+#		checkWrittenFiles(OUT_DIR + "/out_tiped.fa.fa")
+#		cmd="mv out_tiped.fa.fa dbg_2_" + str(kmerSize) + ".fa"
+#		print("\t\t\t"+cmd)
+#		p = subprocessLauncher(cmd)
+#		checkWrittenFiles(OUT_DIR + "/dbg_2_" + str(kmerSize) + ".fa")
 #
-#         # Read Mapping
-#         print("\t#Read mapping with BGREAT... ")
-#         # BGREAT
-#         cmd=BWISE_INSTDIR + "/bgreat -M -k " + kmerSize + " -i 10 " + toolsArgs['bgreat'][fileCase] + " -g dbg_" + str(kmerSize) + ".fa -t " + coreUsed + " -a 63 -m 0 -e 100"
-#         print("\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#         checkWrittenFiles(OUT_DIR + "/paths")
+#		# Read Mapping
+#		print("\t#Read mapping with BGREAT... ")
+#		# BGREAT
+#		cmd=BWISE_INSTDIR + "/bgreat -M -k " + kmerSize + " -i 10 " + toolsArgs['bgreat'][fileCase] + " -g dbg_2_" + str(kmerSize) + ".fa -t " + coreUsed + " -a 63 -m 0 -e 100"
+#		print("\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+#		checkWrittenFiles(OUT_DIR + "/paths")
 #
-#         cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg_" + str(kmerSize) + ".fa "    + kmerSize
-# #        cmd=BWISE_INSTDIR + "/numbersFilter paths " + 0 + " cleanedPaths_"+str(kmerSize)+" "+ 0 + " dbg" + str(kmerSize) + ".fa " + kmerSize 0 # A tester.
-#         print("\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#         # if (True):#if (indiceGraph >1):
-#             # if int(kmerSize) <= k_max:
-#         cmd=BWISE_INSTDIR +"/run_K2000.sh cleanedPaths_"+str(kmerSize)+" dbg_" + str(kmerSize) + ".fa "+kmerSize+" compacted_unitigs_k"+kmerSize+".gfa compacted_unitigs_k"+kmerSize+".fa"
-#         print("\t\t"+cmd)
-#         p = subprocessLauncher(cmd, logs, logs)
-#
+#		cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg_2_" + str(kmerSize) + ".fa "		+ kmerSize
+##			cmd=BWISE_INSTDIR + "/numbersFilter paths " + 0 + " cleanedPaths_"+str(kmerSize)+" "+ 0 + " dbg" + str(kmerSize) + ".fa " + kmerSize 0 # A tester.
+#		print("\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+#		# if (True):#if (indiceGraph >1):
+#			  # if int(kmerSize) <= k_max:
+#		cmd=BWISE_INSTDIR +"/run_K2000.sh cleanedPaths_"+str(kmerSize)+" dbg_2_" + str(kmerSize) + ".fa "+kmerSize+" compacted_unitigs_k"+kmerSize+".gfa compacted_unitigs_k"+kmerSize+".fa"
+#		print("\t\t"+cmd)
+#		p = subprocessLauncher(cmd, logs, logs)
+
 		
 		
 		
@@ -386,9 +386,6 @@ def main():
 		else:
 			printWarningMsg(OUT_DIR + " directory already exists, BWISE will use it.")
 
-		OUT_LOG_FILES = OUT_DIR + "/logs"
-		if not os.path.exists(OUT_LOG_FILES):
-			os.mkdir(OUT_LOG_FILES)
 		outName = OUT_DIR.split("/")[-1]
 		OUT_DIR = os.path.dirname(os.path.realpath(OUT_DIR)) + "/" + outName
 		parametersLog = open(OUT_DIR + "/ParametersUsed.txt", 'w');
@@ -471,7 +468,7 @@ def main():
 	#						   Correction
 	# ------------------------------------------------------------------------
 	t = time.time()
-	correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfiles, toolsArgs, fileCase, nb_correction_steps, OUT_DIR, nb_cores, OUT_LOG_FILES)
+	correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfiles, toolsArgs, fileCase, nb_correction_steps, OUT_DIR, nb_cores)
 	print(printTime("Correction took: ", time.time() - t))
 
 
@@ -479,15 +476,9 @@ def main():
 	#						   Graph construction and cleaning
 	# ------------------------------------------------------------------------
 	t = time.time()
-	valuesGraph = graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, "bankBcalm.txt", k_max, min_cov, min_cov_uni, min_cov_SR, toolsArgs, fileCase, nb_cores, OUT_LOG_FILES)
+	valuesGraph = graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, "bankBcalm.txt", k_max, min_cov, min_cov_uni, min_cov_SR, toolsArgs, fileCase, nb_cores)
 	print(printTime("Graph Construction took: ", time.time() - t))
 
-	# ------------------------------------------------------------------------
-	#						   Super Reads Compaction
-	# ------------------------------------------------------------------------
-	# t = time.time()
-	# srCompaction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, valuesGraph, OUT_LOG_FILES)
-	# print(printTime("Super Reads Compaction took:", time.time() - t))
 
 
 	print(printTime("\nThe end !\nBWISE assembly took: ", time.time() - wholeT))

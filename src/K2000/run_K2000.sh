@@ -22,15 +22,8 @@ in_unitigs=$2
 in_k=$3
 out_gfa=$4
 echo "*** REMOVE DUPLICATES AND COMPACT MAXIMAL SUPER READS *******"
-# BACKTOBWISE: UNCOMMENT THESE NEXT FIVE LINES
-# python3 ${EDIR}/K2000.py ${in_sr} ${in_unitigs} ${in_k} -e > ${in_sr}_compacted
-# if [ $? -ne 0 ] ; then
-#        echo "There was a problem in the unitig compaction, K2000 ABORDED"
-#        exit 1
-# fi
 
-# BACKTOBWISE: COMMENT THESE NEXT NINE LINES
-for min_overlap in 251; do       # TODO: input list
+for min_overlap in 401; do       # TODO: input list
     echo ${min_overlap}; 
     python3 ${EDIR}/K2000.py ${in_sr} ${in_unitigs} ${in_k} ${min_overlap} > ${original_in_sr}_compacted_${min_overlap}
     if [ $? -ne 0 ] ; then
@@ -42,7 +35,7 @@ done
 
 
 echo "*** GENERATE GFA GRAPH FROM COMPACTED MAXIMAL SUPER READS ***"
-python3 ${EDIR}/K2000_msr_to_gfa.py ${in_sr} ${in_unitigs} ${in_k} ${in_sr} > ${out_gfa}
+python3 ${EDIR}/K2000_msr_to_gfa.py ${in_sr} ${in_unitigs} ${in_k} ${original_in_sr} > ${out_gfa}
 if [ $? -ne 0 ] ; then
        echo "There was a problem in the unitig compaction during the GFA construction, K2000 ABORDED"
        exit 1
