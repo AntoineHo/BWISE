@@ -113,16 +113,16 @@ def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfile
 			logHistoCorr = "histocorr" + str(kmerSizeCorrection[indiceCorrection])
 			logHistoCorrToWrite = open(logHistoCorr, 'w')
 			# Bloocoo
-			cmd=BWISE_INSTDIR + "/Bloocoo" + bloocooversion[indiceCorrection] + " -file " + toolsArgs['bloocoo'][fileCase] + slowParameter + "-kmer-size " + kmerSizeCorrection[indiceCorrection] + " -nbits-bloom 24  -out reads_corrected" + str(indiceCorrection + 1) + ".fa -nb-cores " + nb_cores
+			cmd=BWISE_INSTDIR + "/Bloocoo" + bloocooversion[indiceCorrection] + " -file " + toolsArgs['bloocoo'][fileCase] + slowParameter + "-kmer-size " + kmerSizeCorrection[indiceCorrection] + " -nbits-bloom 24  -out reads_corrected" + str(indiceCorrection + 1) + ".fa -nb-cores " + nb_cores + " -abundance-max 1000"
 			print("\tCorrection step " + str(indiceCorrection + 1), flush=True)
 			print( "\t\t"+cmd)
 			p = subprocessLauncher(cmd, logFile, logFile)
 			# Deal with files after Bloocoo
 
 			#TODO=put back the histogram creation
-			# cmd=BWISE_INSTDIR + "/h5dump -y -d histogram_"+kmerSizeCorrection[indiceCorrection]+" reads_corrected" + str(indiceCorrection + 1) + ".fa.h5"
-			# print("\t\t"+cmd)
-			# p = subprocessLauncher(cmd, logHistoCorrToWrite, logHistoCorrToWrite)
+            # cmd=BWISE_INSTDIR + "/h5dump -y -d histogram_"+kmerSizeCorrection[indiceCorrection]+" reads_corrected" + str(indiceCorrection + 1) + ".fa.h5"
+            # print("\t\t"+cmd)
+            # p = subprocessLauncher(cmd, logHistoCorrToWrite, logHistoCorrToWrite)
 			checkWrittenFiles(OUT_DIR + "/reads_corrected" + str(indiceCorrection + 1) + ".fa.h5")
 			# if (indiceCorrection > 0):
 			#	  cmd="rm -f " + OUT_DIR + "/reads_corrected" + str(indiceCorrection) + "* "
