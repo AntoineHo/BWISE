@@ -10,26 +10,6 @@ import sys
 import getopt
 import K2000_common as kc
 
-def get_msr_id(msr):
-    ''' returns the id of a msr 
-    WARNING: here msr contains as last value its unique id. 
-    '''
-    return int(msr[-1].split("_")[1])
-    
-def get_reverse_msr_id(msr,MSR):
-    ''' returns the id of the reverse complement of msr 
-    1/ find the sequence of the msr_ in SR
-    2/ grab its id
-    WARNING: here msr contains as last value its unique id. 
-    '''
-    #1/
-    without_id_reverse_msr = kc.get_reverse_sr(msr[:-1])                     # get the msr reverse complement
-    Y=MSR.get_lists_starting_with_given_prefix(without_id_reverse_msr)        # find the reverse complement in the list. 
-    for y in Y:                                                               # should be of size >= 1. One of them is exactly 'without_id_reverse_msr' plus its id. 
-        if len(y) == len(without_id_reverse_msr)+1:                           # 'y' is 'without_id_reverse_msr' with its node id
-            return get_msr_id(y)                                              # 2/
-    return None                                                               # Should not happend
-
 def get_size_super_read_in_u(u,unitigs,k):
     '''compute the size of unitigs of a path stored in u (sum(size unitigs) - (|u|-1)*(k-1)'''
     cumulated_size_unitigs=0
@@ -71,12 +51,12 @@ def show_right_edges (MSR,x,id_x,unitigs,k):
             if kc.is_canonical(y[:-1]):     # remove the last value that corresponds to the node id
                 strandy ='+'
                 # id_y=indexed_nodes.index(y)                               # get the id of the target node
-                id_y=get_msr_id(y)                                           # last value is the node id, here the id of the target node
+                id_y=kc.get_msr_id(y)                                           # last value is the node id, here the id of the target node
             # CASE 2/
             else:                       
                 strandy='-'
 #                id_y = indexed_nodes.index(kc.get_reverse_msr(y))
-                id_y=get_reverse_msr_id(y,MSR)                                # find the reverse of list y in MSR to grab its id. 
+                id_y=kc.get_reverse_msr_id(y,MSR)                                # find the reverse of list y in MSR to grab its id. 
                 if id_x>id_y: continue # x_.y is the same as y_.x. Thus we chose one of them. By convention, we print x_.y if x<y. 
             size_super_read = get_size_super_read_in_u(u,unitigs,k)
             # print the edges
@@ -95,7 +75,7 @@ def show_right_edges (MSR,x,id_x,unitigs,k):
             if kc.is_canonical(y[:-1]): # CASE 3
                 strandy ='+'
                # id_y=indexed_nodes.index(y)                                # get the id of the target node
-                id_y=get_msr_id(y)                                           # last value is the node id, here the id of the target node
+                id_y=kc.get_msr_id(y)                                           # last value is the node id, here the id of the target node
                 # we determine min(id_x,id_y)
                 if id_x>id_y: continue # x_.y is the same as y_.x. Thus we chose one of them. By convention, we print x_.y if x<y. 
                 size_super_read = get_size_super_read_in_u(u,unitigs,k)
@@ -111,7 +91,7 @@ def print_GFA_edges(MSR,unitigs,k):
     WARNING: here each msr in MSR contains as last value its unique id. 
     '''
     for msr in MSR.traverse():
-        x_id = get_msr_id(msr)                                         # last value is the node id
+        x_id = kc.get_msr_id(msr)                                         # last value is the node id
         if x_id%100==0: sys.stderr.write("\t%.2f"%(100*x_id/len(MSR))+"%\r")
         show_right_edges(MSR,msr,x_id,unitigs,k)
     sys.stderr.write("\t100.00%\n")
@@ -124,7 +104,7 @@ def print_GFA_nodes(MSR, unitigs, size_overlap,mapped_len):
     '''
     nb_errors=0
     for msr in MSR.traverse():
-        node_id = get_msr_id(msr)                                         # last value is the node id
+        node_id = kc.get_msr_id(msr)                                         # last value is the node id
         msr = msr[:-1]                                                    # remove the last value that corresponds to the node id
         if node_id%100==0: sys.stderr.write("\t%.2f"%(100*node_id/len(MSR))+"%\r")
         if not kc.is_canonical(msr): continue
@@ -166,7 +146,7 @@ def print_GFA_nodes_as_ids(MSR, unitigs, k, unitig_coverages):
     WARNING: here each msr in MSR contains as last value its unique id. 
     '''
     for msr in MSR.traverse():
-        node_id = get_msr_id(msr)                        # last value is the node id
+        node_id = kc.get_msr_id(msr)                        # last value is the node id
         msr = msr[:-1]                                   # remove the last value that corresponds to the node id
         if  kc.is_canonical(msr):                       # remove the last value that corresponds to the node id
             print ("S\t"+str(node_id)+"\t", end="")
@@ -221,7 +201,7 @@ def compute_mapped_len(indexedMSR,SRfile_name,unitigs,k):
         if checked%100==0: sys.stderr.write("\t%.2f"%(100*checked/n)+"%\r")
         checked+=1
         if not kc.is_canonical(msr[:-1]): continue
-        msr_id = get_msr_id(msr)
+        msr_id = kc.get_msr_id(msr)
         cumulated_mapped_len[msr_id]=get_cumulated_len_of_sr_occurring_in_a_msr(msr[:-1],SR,unitigs,k) # 2 and 3
 
     sys.stderr.write("\t%.2f"%(100*checked/n)+"%\n")

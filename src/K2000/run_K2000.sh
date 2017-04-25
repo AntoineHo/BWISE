@@ -49,34 +49,35 @@ if [ $? -ne 0 ] ; then
 exit 1
 fi
 
-echo "*** GENERATE A SIMPLIFIED CONSENSUS GRAPH***"
-python3 ${EDIR}/K2000_msr_to_simplified_msr.py ${original_in_sr}_compacted_${min_overlap} ${in_unitigs} ${in_k} > ${original_in_sr}_compacted_${min_overlap}_simplified
-if [ $? -ne 0 ] ; then
-       echo "There was a problem in the graph simplification, K2000 ABORDED"
-       exit 1
-fi
-python3 ${EDIR}/K2000.py ${original_in_sr}_compacted_${min_overlap}_simplified ${in_unitigs} ${in_k} ${min_overlap} > ${original_in_sr}_compacted_${min_overlap}_simplified2
-if [ $? -ne 0 ] ; then
-   echo "There was a problem in the unitig compaction, K2000 ABORDED"
-   exit 1
-fi
-
-
-echo "*** GENERATE GFA GRAPH FROM SIMPLIFIED COMPACTED MAXIMAL SUPER READS ***"
-python3 ${EDIR}/K2000_msr_to_gfa.py ${original_in_sr}_compacted_${min_overlap}_simplified2 ${in_unitigs} ${in_k} ${original_in_sr} > ${out_gfa}_simplified
-if [ $? -ne 0 ] ; then
-       echo "There was a problem in the unitig compaction during the GFA construction, K2000 ABORDED"
-       exit 1
-fi
-
-
-echo "*** GENERATE FASTA FILE FROM SIMPLIFIED MAXIMAL SUPER READS ***"
-out_fasta=$5
-python3 ${EDIR}/K2000_gfa_to_fasta.py ${out_gfa}_simplified > ${out_fasta}_simplified
-if [ $? -ne 0 ] ; then
-       echo "There was a problem in the unitig compaction during the Fasta construction, K2000 ABORDED"
-exit 1
-fi
+############### GENERATION OF CRUSHED BUBBLE GRAPH. UNSAFE AND COMMENTED FOR NOW ###############
+# echo "*** GENERATE A SIMPLIFIED CONSENSUS GRAPH***"
+# python3 ${EDIR}/K2000_msr_to_simplified_msr.py ${original_in_sr}_compacted_${min_overlap} ${in_unitigs} ${in_k} > ${original_in_sr}_compacted_${min_overlap}_simplified
+# if [ $? -ne 0 ] ; then
+#        echo "There was a problem in the graph simplification, K2000 ABORDED"
+#        exit 1
+# fi
+# python3 ${EDIR}/K2000.py ${original_in_sr}_compacted_${min_overlap}_simplified ${in_unitigs} ${in_k} ${min_overlap} > ${original_in_sr}_compacted_${min_overlap}_simplified2
+# if [ $? -ne 0 ] ; then
+#    echo "There was a problem in the unitig compaction, K2000 ABORDED"
+#    exit 1
+# fi
+#
+#
+# echo "*** GENERATE GFA GRAPH FROM SIMPLIFIED COMPACTED MAXIMAL SUPER READS ***"
+# python3 ${EDIR}/K2000_msr_to_gfa.py ${original_in_sr}_compacted_${min_overlap}_simplified2 ${in_unitigs} ${in_k} ${original_in_sr} > ${out_gfa}_simplified
+# if [ $? -ne 0 ] ; then
+#        echo "There was a problem in the unitig compaction during the GFA construction, K2000 ABORDED"
+#        exit 1
+# fi
+#
+#
+# echo "*** GENERATE FASTA FILE FROM SIMPLIFIED MAXIMAL SUPER READS ***"
+# out_fasta=$5
+# python3 ${EDIR}/K2000_gfa_to_fasta.py ${out_gfa}_simplified > ${out_fasta}_simplified
+# if [ $? -ne 0 ] ; then
+#        echo "There was a problem in the unitig compaction during the Fasta construction, K2000 ABORDED"
+# exit 1
+# fi
 
 echo "*** K2000 DONE ***"
 exit 0

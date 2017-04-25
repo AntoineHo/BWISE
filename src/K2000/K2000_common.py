@@ -134,10 +134,116 @@ def load_unitig_lengths(file_name):
         unitig_lengths+=[len(line)]
     return unitig_lengths
 
+def get_right_edges (MSR,x,id_x,unitigs,k):
+    ''' Main function. For a given super read x, we find y that overlap x, and we store the links in a GFA style:
+    +12- (meaning that the forward strand (first '+') of x overlaps the reverse strand (last '-') of 12)
+    Note that one treat x only if its canonical.
+    Four cases :
+    1/ x overlaps y, with y canonical. One prints x + y + blabla
+    2/ x overlaps y_, with y_ non canonical. In this case, y_ overlaps x. One of the two solutions has to be chosen. We chose min(idx,idy) (with idx,idy being the ids of the MSR x,y in SR) One searches the id of y, and one prints x + y - blabla.
+    3/ x_ overlaps y. same as 2.
+    4/ x_ overlaps y_. We do nothing, this case is treated when the entry of the function is y that thus overlaps x.
+    WARNING: here x and each msr in MSR contain as last value its unique id.
+    '''
+    x=x[:-1]                                # remove the x_id from the x msr
+    if not is_canonical(x): return
+    n=len(x)
+    res=[]
+    # CASES 1 AND 2
+    strandx='+'
+    # print ("x is", x)
+    for len_u in range(1,n): # for each possible x suffix
+        u=x[-len_u:]
+        # print ("u is", u)
+        Y=MSR.get_lists_starting_with_given_prefix(u)
+        # if x in Y: Y.remove(x)            # we remove x itself from the list of y : note that it should not occur.
+        # print (x)
+        # assert(x not in Y)
+        if len(Y)==0: continue              # No y starting with u
+        for y in Y:
+            # detect the y strand
+            # CASE 1/
+            if is_canonical(y[:-1]):     # remove the last value that corresponds to the node id
+                strandy ='+'
+                # id_y=indexed_nodes.index(y)                               # get the id of the target node
+                id_y=get_msr_id(y)                                           # last value is the node id, here the id of the target node
+            # CASE 2/
+            else:
+                strandy='-'
+#                id_y = indexed_nodes.index(get_reverse_msr(y))
+                id_y=get_reverse_msr_id(y,MSR)                                # find the reverse of list y in MSR to grab its id.
+                if id_x>id_y: continue # x_.y is the same as y_.x. Thus we chose one of them. By convention, we print x_.y if x<y.
+            # print the edges
+            res.append( strandx+str(id_y)+strandy)
 
-# SR=generate_SR("test.txt")
-# SR.unique()
-# SR=add_reverse_SR(SR)
-# SR.unique()
-# for sr in SR.traverse():
-#     print (sr)
+
+    # CASES 3 AND 4
+    strandx='-'
+    x_=get_reverse_sr(x)
+    for len_u in range(1,n): # for each possible x suffix
+        u=x_[-len_u:]
+        Y=MSR.get_lists_starting_with_given_prefix(u)
+        # assert(x_ not in Y)
+        if len(Y)==0: continue  # No y starting with u
+        for y in Y:
+            if is_canonical(y[:-1]): # CASE 3
+                strandy ='+'
+               # id_y=indexed_nodes.index(y)                                # get the id of the target node
+                id_y=get_msr_id(y)                                           # last value is the node id, here the id of the target node
+                # we determine min(id_x,id_y)
+                if id_x>id_y: continue # x_.y is the same as y_.x. Thus we chose one of them. By convention, we print x_.y if x<y.
+
+                res.append( strandx+str(id_y)+strandy) # note that strand x is always '-' and strandy is always '+' in this case.
+
+#            else: continue # CASE 4, nothing to do.
+    return res
+    
+    
+
+def get_msr_id(msr):
+    ''' returns the id of a msr 
+    WARNING: here msr contains as last value its unique id. 
+    '''
+    return int(msr[-1].split("_")[1])
+    
+def get_reverse_msr_id(msr,MSR):
+    ''' returns the id of the reverse complement of msr 
+    1/ find the sequence of the msr_ in SR
+    2/ grab its id
+    WARNING: here msr contains as last value its unique id. 
+    '''
+    #1/
+    without_id_reverse_msr = get_reverse_sr(msr[:-1])                     # get the msr reverse complement
+    Y=MSR.get_lists_starting_with_given_prefix(without_id_reverse_msr)        # find the reverse complement in the list. 
+    for y in Y:                                                               # should be of size >= 1. One of them is exactly 'without_id_reverse_msr' plus its id. 
+        if len(y) == len(without_id_reverse_msr)+1:                           # 'y' is 'without_id_reverse_msr' with its node id
+            return get_msr_id(y)                                              # 2/
+    return None                                                               # Should not happend
+
+def at_least_a_successor(SR,sr):
+    ''' Checks if sr as at least a successor. Return True in this case, else return False '''
+    n=len(sr)
+    for len_u in range(n-1,0,-1):
+        Y=SR.get_lists_starting_with_given_prefix(sr[-len_u:])
+        if len(Y)>0: 
+            return True
+    return False
+
+def is_a_dead_end(SR,sr):
+    ''' A sr is a dead end if it has no successor or no predecessor '''
+    if not at_least_a_successor(SR,sr):                 return True # No predecesssor, this is a dead end
+    if not at_least_a_successor(SR,get_reverse_sr(sr)): return True # No successor, this is a dead end
+    return False # Sucessor(s) and predecessor(s), this is not a dead end. 
+    
+
+
+def get_len_ACGT(sr,unitig_lengths,k):
+    ''' provides the cumulated length of the unitigs of a sr '''
+    lenACGT = k
+    for unitig_ids in sr:
+        if unitig_ids>0:
+            lenACGT+=unitig_lengths[unitig_ids-1]-k       # add the ACGT len of the corresponding unitig. -1 is due to the fact that unitigs start at zero while sr indices start at one.
+        else:
+            lenACGT+=unitig_lengths[-unitig_ids-1]-k
+
+    return lenACGT
