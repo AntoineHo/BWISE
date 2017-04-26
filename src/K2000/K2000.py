@@ -260,16 +260,19 @@ def main():
     if max_tip>0: 
         sys.stderr.write("  Remove tips of size at most "+str(max_tip)+"\n")
         SR=remove_tips(SR,unitig_lengths,k,max_tip)
-        sys.stderr.write("  Remove tis. Done - nb SR="+ str(len(SR))+"\n")
+        sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
     
     sys.stderr.write("  Compaction of simple paths \r")
     SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)
     sys.stderr.write("  Compaction of simple paths. Done - nb SR="+ str(len(SR))+"\n")
     
     if max_tip>0: 
-        sys.stderr.write("  Remove tips of size at most "+str(max_tip)+"\n")
-        SR=remove_tips(SR,unitig_lengths,k,max_tip)
-        sys.stderr.write("  Remove tis. Done - nb SR="+ str(len(SR))+"\n")
+        while True:
+            size_before=len(SR)
+            sys.stderr.write("  Remove tips of size at most "+str(max_tip)+"\n")
+            SR=remove_tips(SR,unitig_lengths,k,max_tip)
+            sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
+            if len(SR)==size_before: break
         
     # if min_conflict_overlap > 0:
 
@@ -284,7 +287,9 @@ def main():
         sys.stderr.write("  Compaction2 of simple paths \r")
         SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)
         sys.stderr.write("  Compaction2 of simple paths. Done - nb SR="+ str(len(SR))+"\n")
-
+        
+        
+      
     sys.stderr.write("  Print maximal super reads\n")
     kc.print_maximal_super_reads(SR)
 
