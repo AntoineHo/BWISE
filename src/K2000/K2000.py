@@ -221,7 +221,7 @@ def main():
     Compaction of set of super reads coded as set of ids of unitigs
     '''
 
-    max_tip=500
+    max_tip=800
     min_conflict_overlap=0
     if len(sys.argv)==4:
         sys.stderr.write("  Exact K2000 \n")
