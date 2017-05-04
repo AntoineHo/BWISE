@@ -50,6 +50,33 @@ def generate_SR(file_name):
         sl.add(sr)
     return sl
     
+
+# def generate_SR_with_ids(file_name, reverse=False):
+#     ''' Given an input file storing super reads, store them in the SR array. For each sr, store a last value that is an id (i_x) with x: from 0 to n
+#     WARNING: the generated SR cannot be reversed.
+#     '''
+#     # here we use a dirty trick: ids are added at the end of each path ie (3;-17;22) becomes (3;-17;22;id).
+#     # Latter, paths are sorted (for dicchotomic search). For avoiding ids to modify the sorting, each id has to be smaller than any unitig id of each path.
+#     # Thus we use as small as possible negative values.
+#     # The first one has to be even as used with pair of paths, even values are for one of the mapped path, while odd values are for the other
+#     id=sys.maxsize
+#     if id%2==1: id-=1
+#     id=-id
+#     sr_file = open(file_name, 'r')
+#     sl = sorted_list.sorted_list()
+#     for line in sr_file:
+#         if line[0]==">": continue # compatible with fasta-file format
+#         line = line.rstrip()[:-1].split(';')
+#         sr=[]
+#         for unitig_id in line:
+#             sr_val=int(unitig_id)
+#             sr=sr+[sr_val]
+#         if reverse: sr=get_reverse_sr(sr)
+#         sr+=[id]
+#         id+=1
+#         sl.add(sr)
+#     return sl
+    
 def add_reverse_SR(SR):
     ''' For all super reads in SR, we add there reverse in SR 
     This double the SR size, unless there are palindromes ([1,-1] for instance). Those are not added.
@@ -134,14 +161,24 @@ def load_unitig_lengths(file_name):
         unitig_lengths+=[len(line)]
     return unitig_lengths
 
-def get_len_ACGT(sr,unitig_lengths,k):
+def get_len_ACGT_from_unitigs(msr,unitigs,size_overlap):
+    lenACGT=0
+    for unitig_id in msr:
+        unitig_id = int(unitig_id)
+        if unitig_id<0:                                         #the sequence is indicated as reverse complemented. Note that unitig ids start with 1, thus the -0 problem does not appear.
+            unitig_id=-unitig_id
+        lenACGT+=len(unitigs[unitig_id-1])
+    lenACGT-=size_overlap*(len(msr) -1)                # remove the size of the overlaps
+    return lenACGT
+
+def get_len_ACGT(sr,unitig_lengths,size_overlap):
     ''' provides the cumulated length of the unitigs of a sr '''
-    lenACGT = k
+    lenACGT = size_overlap
     for unitig_ids in sr:
         if unitig_ids>0:
-            lenACGT+=unitig_lengths[unitig_ids-1]-k       # add the ACGT len of the corresponding unitig. -1 is due to the fact that unitigs start at zero while sr indices start at one.
+            lenACGT+=unitig_lengths[unitig_ids-1]-size_overlap       # add the ACGT len of the corresponding unitig. -1 is due to the fact that unitigs start at zero while sr indices start at one.
         else:
-            lenACGT+=unitig_lengths[-unitig_ids-1]-k
+            lenACGT+=unitig_lengths[-unitig_ids-1]-size_overlap
 
     return lenACGT
 

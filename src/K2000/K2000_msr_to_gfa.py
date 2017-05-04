@@ -98,14 +98,14 @@ def print_GFA_edges(MSR,unitigs,k):
         
         
              
-def print_GFA_nodes(MSR, unitigs, size_overlap,mapped_len):
+def print_GFA_nodes(MSR, unitigs, size_overlap,number_mapped_sr):
     '''print canonical unitigs
     WARNING: here each msr in MSR contains as last value its unique id. 
     '''
     nb_errors=0
-    for msr in MSR.traverse():
-        node_id = kc.get_msr_id(msr)                                         # last value is the node id
-        msr = msr[:-1]                                                    # remove the last value that corresponds to the node id
+    for indexed_msr in MSR.traverse():
+        node_id = kc.get_msr_id(indexed_msr)                              # last value is the node id
+        msr = indexed_msr[:-1]                                            # remove the last value that corresponds to the node id
         if node_id%100==0: sys.stderr.write("\t%.2f"%(100*node_id/len(MSR))+"%\r")
         if not kc.is_canonical(msr): continue
         
@@ -114,6 +114,7 @@ def print_GFA_nodes(MSR, unitigs, size_overlap,mapped_len):
         previous_id=-1
         previous_overlap=""                                         #used only to assert a good k-1 overlap. 
         size_msrACGT=0
+        msrACGT=""
         for unitig_id in msr:
             reverse=False
             # print ("\n",str(unitig_id-1))
@@ -133,10 +134,13 @@ def print_GFA_nodes(MSR, unitigs, size_overlap,mapped_len):
             previous_id = unitig_id
             if not print_first_kmer: unitig=unitig[size_overlap:]   # remove the k-1 overlap
             print_first_kmer=False                                  #do not print first kmer for next unitigs
-            print (unitig,end="")
-            size_msrACGT+=len(unitig)
-        print ("\tFC:i:"+str(mapped_len[node_id])+"\t#AVG:f:%.2f"%(mapped_len[node_id]/size_msrACGT))
-       
+            # print (unitig,end="")
+            msrACGT+=unitig
+        # size_msrACGT=len(msrACGT)
+        # coverage=number_mapped_sr[node_id]/float(size_msrACGT)
+        print (msrACGT+"\tFC:i:"+str(number_mapped_sr[node_id]))#+"\t#AVG:f:%.2f"%(coverage))
+            
+
                 
     sys.stderr.write("\t100.00% -- "+ str(nb_errors)+" error(s)\n" )
             
@@ -158,33 +162,34 @@ def union(a, b):
     """ return the union of two lists """
     return list(set(a) | set(b))
 
-def get_cumulated_len_of_sr_occurring_in_a_msr(msr,SR,unitigs,size_overlap):
+def get_number_of_sr_occurring_in_a_msr(msr,SR,unitigs,size_overlap):
     '''
     given a msr, 
-    1/ find sr mapping on it (forward or reverse strand)
+    1/ find sr mapping on it (forward msr strand, but all sr are both forward and reverse so no need to compute reverse msr)
     2/ count the length of each sr
     3/ return the cumulative length of mapped sr. 
     '''
     n=len(msr)
-    mapped_len=0
+    nb_mapped=0
     
     for position_suffix in range(0,n):                                              #each possible possible unitig id from msr
         u=msr[position_suffix]
         anchored_sr_set=SR.get_lists_starting_with_given_prefix([u])                #get sr anchored to msr
         for sr in anchored_sr_set:                                                  # check if its colinear 
             if len(sr)+position_suffix <= n and kc.colinear(msr,[sr],[position_suffix]):
-                len_this_sr=0                                                       # compute the len of the mapped sr
-                for unitig_id in sr:                                                # compute the len of the mapped sr
-                    unitig_id = int(unitig_id)                                      # compute the len of the mapped sr
-                    if unitig_id<0: unitig_id=-unitig_id                            # compute the len of the mapped sr
-                    len_this_sr += len(unitigs[unitig_id-1])                        # compute the len of the mapped sr. -1 because of indexing is zero based while numbers are one based.
-                len_this_sr -= size_overlap*(len(sr) -1)                            # remove ovelap size
-                mapped_len+=len_this_sr                                             # adding this len of this sr 
-    return mapped_len
+                # len_this_sr=0                                                       # compute the len of the mapped sr
+                # for unitig_id in sr:                                                # compute the len of the mapped sr
+                    # unitig_id = int(unitig_id)                                      # compute the len of the mapped sr
+                    # if unitig_id<0: unitig_id=-unitig_id                            # compute the len of the mapped sr
+                    # len_this_sr += len(unitigs[unitig_id-1])                        # compute the len of the mapped sr. -1 because of indexing is zero based while numbers are one based.
+                # len_this_sr -= size_overlap*(len(sr) -1)                            # remove ovelap size
+                nb_mapped+=1                                                       # a new sr mapped
+                # sys.stderr.write("\n"+str(msr)+" "+str(sr)+" "+str(len_this_sr)+" "+str(mapped_len))
+    return nb_mapped
 
 
 
-def compute_mapped_len(indexedMSR,SRfile_name,unitigs,k):
+def compute_number_mapped(indexedMSR,SRfile_name,unitigs,size_overlap):
     ''' compute the cumulative mapped_len of each MSR
     1/ for each canonical msr 
     2/ map all raw (potentially redundant and potentially strictly included) sr on msr (seen as forward or reverse)
@@ -194,7 +199,7 @@ def compute_mapped_len(indexedMSR,SRfile_name,unitigs,k):
     SR=kc.generate_SR(SRfile_name)                                          #load and sort original sr file
     kc.add_reverse_SR(SR)                                                   #load and sort original sr file
     SR.sort()                                                               #load and sort original sr file
-    cumulated_mapped_len={}                                                 #function results : cumulative len of mapped sr on each msr
+    number_mapped_sr={}                                                     #function results : cumulative len of mapped sr on each msr
     checked=0                                                               #cosmetics
 
     for msr in indexedMSR.traverse():                                       # 1/ 
@@ -202,13 +207,14 @@ def compute_mapped_len(indexedMSR,SRfile_name,unitigs,k):
         checked+=1
         if not kc.is_canonical(msr[:-1]): continue
         msr_id = kc.get_msr_id(msr)
-        cumulated_mapped_len[msr_id]=get_cumulated_len_of_sr_occurring_in_a_msr(msr[:-1],SR,unitigs,k) # 2 and 3
+        number_mapped_sr[msr_id]= get_number_of_sr_occurring_in_a_msr(msr[:-1]                   ,SR,unitigs,size_overlap) # 2 and 3
+        
 
     sys.stderr.write("\t%.2f"%(100*checked/n)+"%\n")
-    return cumulated_mapped_len
-    
-    
-    
+    return number_mapped_sr
+
+
+        
 
 def main():
     '''
@@ -219,13 +225,16 @@ def main():
     MSR=kc.generate_SR(sys.argv[1])
     unitigs=kc.load_unitigs(sys.argv[2])
     k = int(sys.argv[3])
+    
+    
+    
     kc.add_reverse_SR(MSR)
     MSR.sort()
     MSR.index_nodes()                          # This adds a final value to each sr, providing its node id. 
     sys.stderr.write("Compute GFA Node coverages\n")
-    mapped_len=compute_mapped_len(MSR,sys.argv[4],unitigs,k-1)
+    number_mapped_sr=compute_number_mapped(MSR,sys.argv[4],unitigs,k-1)
     sys.stderr.write("Print GFA Nodes\n")
-    print_GFA_nodes(MSR,unitigs,k-1,mapped_len)
+    print_GFA_nodes(MSR,unitigs,k-1,number_mapped_sr)
     # print_GFA_nodes_as_ids(SR,unitigs,k-1)
     sys.stderr.write("Print GFA Edges\n")
     print_GFA_edges(MSR,unitigs,k)

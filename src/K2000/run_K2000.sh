@@ -34,7 +34,7 @@ done
 
 
 echo "*** GENERATE GFA GRAPH FROM COMPACTED MAXIMAL SUPER READS ***"
-# python3 ${EDIR}/K2000_msr_to_gfa.py ${original_in_sr}_compacted_${min_overlap} ${in_unitigs} ${in_k} ${original_in_sr} > ${out_gfa}
+#python3 ${EDIR}/K2000_msr_to_gfa.py ${original_in_sr}_compacted_${min_overlap} ${in_unitigs} ${in_k} ${original_in_sr} > ${out_gfa}
 python3 ${EDIR}/K2000_msr_to_gfa.py ${original_in_sr}_compacted_${min_overlap} ${in_unitigs} ${in_k} paths > ${out_gfa}
 if [ $? -ne 0 ] ; then
        echo "There was a problem in the unitig compaction during the GFA construction, K2000 ABORDED"

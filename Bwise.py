@@ -120,9 +120,9 @@ def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfile
 			# Deal with files after Bloocoo
 
 			#TODO=put back the histogram creation
-            # cmd=BWISE_INSTDIR + "/h5dump -y -d histogram_"+kmerSizeCorrection[indiceCorrection]+" reads_corrected" + str(indiceCorrection + 1) + ".fa.h5"
-            # print("\t\t"+cmd)
-            # p = subprocessLauncher(cmd, logHistoCorrToWrite, logHistoCorrToWrite)
+			# cmd=BWISE_INSTDIR + "/h5dump -y -d histogram_"+kmerSizeCorrection[indiceCorrection]+" reads_corrected" + str(indiceCorrection + 1) + ".fa.h5"
+			# print("\t\t"+cmd)
+			# p = subprocessLauncher(cmd, logHistoCorrToWrite, logHistoCorrToWrite)
 			checkWrittenFiles(OUT_DIR + "/reads_corrected" + str(indiceCorrection + 1) + ".fa.h5")
 			# if (indiceCorrection > 0):
 			#	  cmd="rm -f " + OUT_DIR + "/reads_corrected" + str(indiceCorrection) + "* "
@@ -251,51 +251,51 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 
 		fileBcalm = "compacted_unitigs_k"+kmerSize+".fa";
 
-#		kmerSize="51"
-#		print("\t#Graph Construction second stage... ", flush=True)
-#
-#		cmd=BWISE_INSTDIR + "/bcalm -in " + OUT_DIR + "/" + fileBcalm + " -kmer-size " + kmerSize + " -abundance-min 1 -out " + OUT_DIR + "/out2 " + " -nb-cores " + nb_cores
-#		print( "\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
-#		checkWrittenFiles(OUT_DIR + "/out2.unitigs.fa")
-#			  #		Graph Cleaning
-#		print("\t\t #Cleaning... ", flush=True)
-#
-#		# kMILL + tip cleaning
-#		cmd=BWISE_INSTDIR + "/kMILL out2.unitigs.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
-#		print("\t\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
-#		checkWrittenFiles(OUT_DIR + "/out_out2.unitigs.fa.fa")
-#		cmd=BWISE_INSTDIR + "/tipCleaner out_out2.unitigs.fa.fa "		   + str(int(kmerSize) - 1) + " " + str(50+int(kmerSize))
-#		print("\t\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
-#		checkWrittenFiles(OUT_DIR + "/tiped.fa")
-#		cmd=BWISE_INSTDIR + "/kMILL tiped.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
-#		print("\t\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
-#		checkWrittenFiles(OUT_DIR + "/out_tiped.fa.fa")
-#		cmd="mv out_tiped.fa.fa dbg_2_" + str(kmerSize) + ".fa"
-#		print("\t\t\t"+cmd)
-#		p = subprocessLauncher(cmd)
-#		checkWrittenFiles(OUT_DIR + "/dbg_2_" + str(kmerSize) + ".fa")
-#
-#		# Read Mapping
-#		print("\t#Read mapping with BGREAT... ")
-#		# BGREAT
-#		cmd=BWISE_INSTDIR + "/bgreat -M -k " + kmerSize + " -i 10 " + toolsArgs['bgreat'][fileCase] + " -g dbg_2_" + str(kmerSize) + ".fa -t " + coreUsed + " -a 63 -m 0 -e 100"
-#		print("\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
-#		checkWrittenFiles(OUT_DIR + "/paths")
-#
-#		cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg_2_" + str(kmerSize) + ".fa "		+ kmerSize
-##			cmd=BWISE_INSTDIR + "/numbersFilter paths " + 0 + " cleanedPaths_"+str(kmerSize)+" "+ 0 + " dbg" + str(kmerSize) + ".fa " + kmerSize 0 # A tester.
-#		print("\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
-#		# if (True):#if (indiceGraph >1):
-#			  # if int(kmerSize) <= k_max:
-#		cmd=BWISE_INSTDIR +"/run_K2000.sh cleanedPaths_"+str(kmerSize)+" dbg_2_" + str(kmerSize) + ".fa "+kmerSize+" compacted_unitigs_k"+kmerSize+".gfa compacted_unitigs_k"+kmerSize+".fa"
-#		print("\t\t"+cmd)
-#		p = subprocessLauncher(cmd, logs, logs)
+		kmerSize="201"
+		print("\t#Graph Construction second stage... ", flush=True)
+
+		cmd=BWISE_INSTDIR + "/bcalm -in " + OUT_DIR + "/" + fileBcalm + " -kmer-size " + kmerSize + " -abundance-min 1 -out " + OUT_DIR + "/out2 " + " -nb-cores " + nb_cores
+		print( "\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
+		checkWrittenFiles(OUT_DIR + "/out2.unitigs.fa")
+			  #		   Graph Cleaning
+		print("\t\t #Cleaning... ", flush=True)
+
+		# kMILL + tip cleaning
+		cmd=BWISE_INSTDIR + "/kMILL out2.unitigs.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
+		print("\t\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
+		checkWrittenFiles(OUT_DIR + "/out_out2.unitigs.fa.fa")
+		cmd=BWISE_INSTDIR + "/tipCleaner out_out2.unitigs.fa.fa "			+ str(int(kmerSize) - 1) + " " + str(50+int(kmerSize))
+		print("\t\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
+		checkWrittenFiles(OUT_DIR + "/tiped.fa")
+		cmd=BWISE_INSTDIR + "/kMILL tiped.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
+		print("\t\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
+		checkWrittenFiles(OUT_DIR + "/out_tiped.fa.fa")
+		cmd="mv out_tiped.fa.fa dbg_2_" + str(kmerSize) + ".fa"
+		print("\t\t\t"+cmd)
+		p = subprocessLauncher(cmd)
+		checkWrittenFiles(OUT_DIR + "/dbg_2_" + str(kmerSize) + ".fa")
+
+		# Read Mapping
+		print("\t#Read mapping with BGREAT... ")
+		# BGREAT
+		cmd=BWISE_INSTDIR + "/bgreat -M -k " + kmerSize + " -i 10 " + toolsArgs['bgreat'][fileCase] + " -g dbg_2_" + str(kmerSize) + ".fa -t " + coreUsed + " -a 63 -m 0 -e 100"
+		print("\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
+		checkWrittenFiles(OUT_DIR + "/paths")
+
+		cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg_2_" + str(kmerSize) + ".fa "		  + kmerSize
+#			 cmd=BWISE_INSTDIR + "/numbersFilter paths " + 0 + " cleanedPaths_"+str(kmerSize)+" "+ 0 + " dbg" + str(kmerSize) + ".fa " + kmerSize 0 # A tester.
+		print("\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
+		# if (True):#if (indiceGraph >1):
+			  # if int(kmerSize) <= k_max:
+		cmd=BWISE_INSTDIR +"/run_K2000.sh cleanedPaths_"+str(kmerSize)+" dbg_2_" + str(kmerSize) + ".fa "+kmerSize+" compacted_unitigs_k"+kmerSize+".gfa compacted_unitigs_k"+kmerSize+".fa"
+		print("\t\t"+cmd)
+		p = subprocessLauncher(cmd, logs, logs)
 
 		
 		
