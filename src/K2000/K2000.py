@@ -221,7 +221,7 @@ def main():
     Compaction of set of super reads coded as set of ids of unitigs
     '''
 
-    max_tip=800
+    max_tip=300
     min_conflict_overlap=0
     if len(sys.argv)==4:
         sys.stderr.write("  Exact K2000 \n")
@@ -262,9 +262,11 @@ def main():
         SR=remove_tips(SR,unitig_lengths,k,max_tip)
         sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
     
-    sys.stderr.write("  Compaction of simple paths \r")
-    SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)
-    sys.stderr.write("  Compaction of simple paths. Done - nb SR="+ str(len(SR))+"\n")
+    for this_min_conflict_overlap in range(0,1000,50):
+        if this_min_conflict_overlap>min_conflict_overlap: break
+        sys.stderr.write("  Compaction of simple paths, min conflict overlap ="+str(this_min_conflict_overlap)+" \n")
+        SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)
+        sys.stderr.write("  Compaction of simple paths. Done - nb SR="+ str(len(SR))+"\n")
     
     if max_tip>0: 
         while True:
