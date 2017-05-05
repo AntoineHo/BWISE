@@ -252,8 +252,8 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 		fileBcalm = "compacted_unitigs_k"+kmerSize+".fa";
 
 		kmerSize="201"
-		if False: 
-		# for k in range(101,252,50):
+		#if False: 
+		for k in range(101,252,50):
 			kmerSize=str(k)
 			print("\t#Graph Construction using k= "+str(kmerSize), flush=True)
 			

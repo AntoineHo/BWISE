@@ -262,7 +262,7 @@ def main():
         SR=remove_tips(SR,unitig_lengths,k,max_tip)
         sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
     
-    for this_min_conflict_overlap in range(0,1000,50):
+    for this_min_conflict_overlap in range(250,1000,50):
         if this_min_conflict_overlap>min_conflict_overlap: break
         sys.stderr.write("  Compaction of simple paths, min conflict overlap ="+str(this_min_conflict_overlap)+" \n")
         SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)

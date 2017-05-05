@@ -234,8 +234,8 @@ def main():
     sys.stderr.write("Compute GFA Node coverages\n")
     number_mapped_sr=compute_number_mapped(MSR,sys.argv[4],unitigs,k-1)
     sys.stderr.write("Print GFA Nodes\n")
-    # print_GFA_nodes(MSR,unitigs,k-1,number_mapped_sr)
-    print_GFA_nodes_as_ids(MSR,unitigs,k-1)
+    print_GFA_nodes(MSR,unitigs,k-1,number_mapped_sr)
+    # print_GFA_nodes_as_ids(MSR,unitigs,k-1)
     sys.stderr.write("Print GFA Edges\n")
     print_GFA_edges(MSR,unitigs,k)
 
