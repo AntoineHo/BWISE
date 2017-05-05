@@ -253,7 +253,7 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 
 		kmerSize="201"
 		#if False: 
-		for k in range(101,252,50):
+		for k in range(201,202,50):
 			kmerSize=str(k)
 			print("\t#Graph Construction using k= "+str(kmerSize), flush=True)
 			
