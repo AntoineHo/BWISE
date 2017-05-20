@@ -245,7 +245,9 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 		cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg" + str(kmerSize) + ".fa " + kmerSize
 		print("\t\t"+cmd)
 		p = subprocessLauncher(cmd, logs, logs)
-		cmd=BWISE_INSTDIR +"/run_K2000.sh cleanedPaths_"+str(kmerSize)+" dbg" + str(kmerSize) + ".fa "+kmerSize+" compacted_unitigs_k"+kmerSize+".gfa compacted_unitigs_k"+kmerSize+".fa"
+
+		print("\t#Maximal read graph creation and simplification with K2000... ")
+		cmd=BWISE_INSTDIR +"/run_K2000.sh -i cleanedPaths_"+str(kmerSize)+" -u dbg" + str(kmerSize) + ".fa -k "+kmerSize+" -g compacted_unitigs_k"+kmerSize+".gfa   -f compacted_unitigs_k"+kmerSize+".fa"
 		print("\t\t"+cmd)
 		p = subprocessLauncher(cmd, logs, logs)
 
@@ -296,7 +298,10 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 			p = subprocessLauncher(cmd, logs, logs)
 			# if (True):#if (indiceGraph >1):
 				  # if int(kmerSize) <= k_max:
-			cmd=BWISE_INSTDIR +"/run_K2000.sh cleanedPaths_"+str(kmerSize)+" dbg_2_" + str(kmerSize) + ".fa "+kmerSize+" compacted_unitigs_k"+kmerSize+".gfa compacted_unitigs_k"+kmerSize+".fa"
+			
+			# Read Mapping
+			print("\t#Maximal read graph creation and simplification with K2000... ")
+			cmd=BWISE_INSTDIR +"/run_K2000.sh -i cleanedPaths_"+str(kmerSize)+" -u dbg_2_" + str(kmerSize) + ".fa -k "+kmerSize+" -g compacted_unitigs_k"+kmerSize+".gfa -f compacted_unitigs_k"+kmerSize+".fa"
 			print("\t\t"+cmd)
 			p = subprocessLauncher(cmd, logs, logs)
 

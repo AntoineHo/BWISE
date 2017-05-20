@@ -11,6 +11,7 @@ import sys
 import getopt
 import K2000_common as kc
 import sorted_list
+import argparse
 
 
 
@@ -221,24 +222,50 @@ def main():
     Compaction of set of super reads coded as set of ids of unitigs
     '''
 
-    max_tip=500
-    min_conflict_overlap=0
-    if len(sys.argv)==4:
-        sys.stderr.write("  Exact K2000 \n")
-    else:
-        if sys.argv[4] != "-e": # old option. Useless, but kept compatible with previous versions. 
-            min_conflict_overlap = int(sys.argv[4])
-            sys.stderr.write("  Gready K2000, min overlap for conflict is "+ str(min_conflict_overlap)+"\n")
-
-    if min_conflict_overlap>0:                                                                  # GREADY approach
+    parser = argparse.ArgumentParser(description='Compaction of set of super reads coded as set of ids of unitigs.')
+    parser.add_argument("input_file", type=str,
+                        help="input file containing dbg paths as a list of unitig ids, eg. on line looks like \"-1;24;198;\"" )
+                        
+    parser.add_argument("-c", "--min_conflict_overlap", type=int, dest='c',
+                        help="Minimal conflict overlap. \n\t With M=0: K2000 is exact. \n\t With C>0: K2000 becomes greedy, in this case if a path A could be extended either by B or C and B and C are not collinear, then if the size of the overlap (A,B)>C and the size of the overlap (A,C)<C, then compact A-B but not A-C. If both overlaps are bigger than C or both smaller than C, no compaction is made. \n Note that with C>0, size of unitigs has to be computable, thus K2000 needs to know the k value and the unitig length. Thus, with C>0, options -k and --unitig_file  are mandatory. [DEFAULT 0]", default=0)
+    
+    parser.add_argument("-t", "--max_tip", type=int, dest='t',
+                        help=" Dead end smaller or equal than this value are removed from the path graph.\n Note that with C>0, size of unitigs has to be computable, thus K2000 needs to know the k value and the unitig length. Thus, with C>0, options -k and --unitig_file  are mandatory. [DEFAULT 0]", default=0)
+                        
+    parser.add_argument("-u", "--unitig_file", type=str,
+                        help=" input fasta file containing unitig sequences. Note that unitig id 1 (as indicated in the paths input file) corresponds to the first unitig. This option is mandatory if -c > 0 or -t > 0, else it's useless")
+                        
+    parser.add_argument("-k", type=int, dest='k', 
+                        help="kmer size. This option is mandatory if -c > 0 or -t > 0, else it's useless.")
+                        
+    args = parser.parse_args()
+    input_file=str(args.input_file)
+    min_conflict_overlap=args.c
+    max_tip=args.t
+    k=args.k
+    unitig_file=args.unitig_file
+    
+    
+    sys.stderr.write("** This is K2000. Option reviews     **\n")
+    sys.stderr.write("\t input_file: "+            input_file+                  "\n")
+    sys.stderr.write("\t min_conflict_overlap: "+  str(min_conflict_overlap)+   "\n")
+    sys.stderr.write("\t max tips: "+              str(max_tip)+                "\n")
+    sys.stderr.write("\t k: "+                     str(k)+                      "\n")
+    sys.stderr.write("\t unitig_file: "+           str(unitig_file)+                 "\n")
+    sys.stderr.write("** This is K2000. Computation starts **\n")
+    
+    # User needs to remove tips or uses a gready approach. In this case we need to check that k and unitig lengths are correctly informed, then we load unitigs lengths.
+    unitig_lengths=None
+    if max_tip>0 or min_conflict_overlap>0:
+        if k==None or unitig_file==None: 
+            sys.stderr.write("ERROR: k option and unitig_file must be informed if using max_tip>0 or min_conflict_overlap>0. Exit\n")
+            sys.exit(1)
         sys.stderr.write("  Load unitig lengths \n")
-        unitig_lengths = kc.load_unitig_lengths (sys.argv[2])
-        k = int(sys.argv[3])
-    else:
-        unitig_lengths = None
-        k = 0
+        unitig_lengths = kc.load_unitig_lengths (unitig_file)
+
+
     sys.stderr.write("  Load super reads \r")
-    SR=kc.generate_SR(sys.argv[1])
+    SR=kc.generate_SR(input_file)
     sys.stderr.write("  Load super reads. Done - nb SR="+ str(len(SR))+"\n")
 
     sys.stderr.write("  Add reverse complements \r")
@@ -262,26 +289,16 @@ def main():
         SR=remove_tips(SR,unitig_lengths,k,max_tip)
         sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
     
-    for this_min_conflict_overlap in range(250,1000,50):
-        if this_min_conflict_overlap>min_conflict_overlap: break
-        sys.stderr.write("  Compaction of simple paths, min conflict overlap ="+str(this_min_conflict_overlap)+" \n")
-        SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)
-        sys.stderr.write("  Compaction of simple paths. Done - nb SR="+ str(len(SR))+"\n")
+ 
+    sys.stderr.write("  Compaction of simple paths, min conflict overlap ="+str(min_conflict_overlap)+" \n")
+    SR=compaction(SR, unitig_lengths,k,min_conflict_overlap)
+    sys.stderr.write("  Compaction of simple paths. Done - nb SR="+ str(len(SR))+"\n")
     
     if max_tip>0: 
-        while True:
-            size_before=len(SR)
-            sys.stderr.write("  Remove tips of size at most "+str(max_tip)+"\n")
-            SR=remove_tips(SR,unitig_lengths,k,max_tip)
-            sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
-            if len(SR)==size_before: break
-        
-    # if min_conflict_overlap > 0:
-
-        # sys.stderr.write("    Remove dust\r")
-        # SR=remove_dust(SR,unitig_lengths,k,2*min_conflict_overlap)
-        # sys.stderr.write("    Remove dust. Done - nb SR="+ str(len(SR))+"\n")
-
+        sys.stderr.write("  Remove tips of size at most "+str(max_tip)+"\n")
+        SR=remove_tips(SR,unitig_lengths,k,max_tip)
+        sys.stderr.write("  Remove tips. Done - nb SR="+ str(len(SR))+"\n")
+    
         sys.stderr.write("  Remove redundant overlaps\r")
         remove_redundant_overlaps(SR,unitig_lengths,k,min_conflict_overlap)
         sys.stderr.write("  Remove redundant overlaps. Done - nb SR="+ str(len(SR))+"\n")
