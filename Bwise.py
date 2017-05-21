@@ -196,7 +196,7 @@ def correctionReads(BWISE_MAIN, BWISE_INSTDIR, paired_readfiles, single_readfile
 #              graph generation with BCALM + kMILL + BGREAT
 # ############################################################################
 
-def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, solidity, unitigFilter, superReadsCleaning, toolsArgs, fileCase, nb_cores, max_tip, min_conflict_overlap,crush):
+def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, solidity, unitigFilter, superReadsCleaning, toolsArgs, fileCase, nb_cores, max_tip, min_conflict_overlap,dontcrush):
     try:
         print("\n" + getTimestamp() + "--> Starting Graph construction and Super Reads generation...")
         logs = open(OUT_DIR+"/logs", 'w')
@@ -255,58 +255,60 @@ def graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, fileBcalm, k_max, soli
 
         kmerSize="201"
         #if False: 
-        for k in range(201,202,50):
-            kmerSize=str(k)
-            print("\t#Graph Construction using k= "+str(kmerSize), flush=True)
-            
-            cmd=BWISE_INSTDIR + "/bcalm -in " + OUT_DIR + "/" + fileBcalm + " -kmer-size " + kmerSize + " -abundance-min 1 -out " + OUT_DIR + "/out2 " + " -nb-cores " + nb_cores
-            print( "\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
-            checkWrittenFiles(OUT_DIR + "/out2.unitigs.fa")
-                  #        Graph Cleaning
-            print("\t\t #Cleaning... ", flush=True)
-            
-            # kMILL + tip cleaning
-            cmd=BWISE_INSTDIR + "/kMILL out2.unitigs.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
-            print("\t\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
-            checkWrittenFiles(OUT_DIR + "/out_out2.unitigs.fa.fa")
-            cmd=BWISE_INSTDIR + "/tipCleaner out_out2.unitigs.fa.fa "           + str(int(kmerSize) - 1) + " " + str(50+int(kmerSize))
-            print("\t\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
-            checkWrittenFiles(OUT_DIR + "/tiped.fa")
-            cmd=BWISE_INSTDIR + "/kMILL tiped.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
-            print("\t\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
-            checkWrittenFiles(OUT_DIR + "/out_tiped.fa.fa")
-            cmd="mv out_tiped.fa.fa dbg_2_" + str(kmerSize) + ".fa"
-            print("\t\t\t"+cmd)
-            p = subprocessLauncher(cmd)
-            checkWrittenFiles(OUT_DIR + "/dbg_2_" + str(kmerSize) + ".fa")
-            
-            # Read Mapping
-            print("\t#Read mapping with BGREAT... ")
-            # BGREAT
-            cmd=BWISE_INSTDIR + "/bgreat -M -k " + kmerSize + " -i 10 " + toolsArgs['bgreat'][fileCase] + " -g dbg_2_" + str(kmerSize) + ".fa -t " + coreUsed + " -a 63 -m 0 -e 100"
-            print("\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
-            checkWrittenFiles(OUT_DIR + "/paths")
-            
-            cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg_2_" + str(kmerSize) + ".fa "        + kmerSize
-#                cmd=BWISE_INSTDIR + "/numbersFilter paths " + 0 + " cleanedPaths_"+str(kmerSize)+" "+ 0 + " dbg" + str(kmerSize) + ".fa " + kmerSize 0 # A tester.
-            print("\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
-            # if (True):#if (indiceGraph >1):
-                  # if int(kmerSize) <= k_max:
-            
-            # Read Mapping
-            print("\t#Maximal read graph creation and simplification with K2000... ")
+
+        print("\t#Graph Construction using k= "+str(kmerSize), flush=True)
+        
+        cmd=BWISE_INSTDIR + "/bcalm -in " + OUT_DIR + "/" + fileBcalm + " -kmer-size " + kmerSize + " -abundance-min 1 -out " + OUT_DIR + "/out2 " + " -nb-cores " + nb_cores
+        print( "\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
+        checkWrittenFiles(OUT_DIR + "/out2.unitigs.fa")
+              #        Graph Cleaning
+        print("\t\t #Cleaning... ", flush=True)
+        
+        # kMILL + tip cleaning
+        cmd=BWISE_INSTDIR + "/kMILL out2.unitigs.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
+        print("\t\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
+        checkWrittenFiles(OUT_DIR + "/out_out2.unitigs.fa.fa")
+        cmd=BWISE_INSTDIR + "/tipCleaner out_out2.unitigs.fa.fa "           + str(int(kmerSize) - 1) + " " + str(50+int(kmerSize))
+        print("\t\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
+        checkWrittenFiles(OUT_DIR + "/tiped.fa")
+        cmd=BWISE_INSTDIR + "/kMILL tiped.fa " + str(int(kmerSize) - 1) + " " + str(int(kmerSize) - 2)
+        print("\t\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
+        checkWrittenFiles(OUT_DIR + "/out_tiped.fa.fa")
+        cmd="mv out_tiped.fa.fa dbg_2_" + str(kmerSize) + ".fa"
+        print("\t\t\t"+cmd)
+        p = subprocessLauncher(cmd)
+        checkWrittenFiles(OUT_DIR + "/dbg_2_" + str(kmerSize) + ".fa")
+        
+        # Read Mapping
+        print("\t#Read mapping with BGREAT... ")
+        # BGREAT
+        cmd=BWISE_INSTDIR + "/bgreat -M -k " + kmerSize + " -i 10 " + toolsArgs['bgreat'][fileCase] + " -g dbg_2_" + str(kmerSize) + ".fa -t " + coreUsed + " -a 63 -m 0 -e 100"
+        print("\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
+        checkWrittenFiles(OUT_DIR + "/paths")
+        
+        cmd=BWISE_INSTDIR + "/numbersFilter paths " + str(unitigFilter) + " cleanedPaths_"+str(kmerSize)+" "+ str(superReadsCleaning) + " dbg_2_" + str(kmerSize) + ".fa "        + kmerSize
+#               cmd=BWISE_INSTDIR + "/numbersFilter paths " + 0 + " cleanedPaths_"+str(kmerSize)+" "+ 0 + " dbg" + str(kmerSize) + ".fa " + kmerSize 0 # A tester.
+        print("\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
+        # if (True):#if (indiceGraph >1):
+              # if int(kmerSize) <= k_max:
+        
+        # Read Mapping
+        print("\t#Maximal read graph creation and simplification with K2000... ")
+        crush_buble_option=""
+        # print ("crush="+crush)
+        if dontcrush:
             crush_buble_option=""
-            if crush:
-                crush_buble_option=" -b "
-            cmd=BWISE_INSTDIR +"/run_K2000.sh -i cleanedPaths_"+str(kmerSize)+" -u dbg_2_" + str(kmerSize) + ".fa -k "+kmerSize+" -g compacted_unitigs_k"+kmerSize+".gfa -f compacted_unitigs_k"+kmerSize+".fa -t "+max_tip+" -c  "+min_conflict_overlap+crush_buble_option
-            print("\t\t"+cmd)
-            p = subprocessLauncher(cmd, logs, logs)
+        else:
+            crush_buble_option=" -b "
+        cmd=BWISE_INSTDIR +"/run_K2000.sh -i cleanedPaths_"+str(kmerSize)+" -u dbg_2_" + str(kmerSize) + ".fa -k "+kmerSize+" -g compacted_unitigs_k"+kmerSize+".gfa -f compacted_unitigs_k"+kmerSize+".fa -t "+max_tip+" -c  "+min_conflict_overlap+crush_buble_option
+        print("\t\t"+cmd)
+        p = subprocessLauncher(cmd, logs, logs)
 
         
         
@@ -361,7 +363,7 @@ def main():
     
     parser.add_argument("--max_tip", type=str, dest='max_tip',
                         help=" Dead end smaller or equal than this value are removed from the path graph.\n Note that with C>0, size of unitigs has to be computable, thus K2000 needs to know the k value and the unitig length. Thus, with C>0, options -k and --unitig_file  are mandatory. [DEFAULT 0]", default=0)
-    parser.add_argument('-b',action="store_false", dest="crush", default=False, help=" Crush the bubbles in the last MSR graph [DEFAULT False]")
+    parser.add_argument('--crush_bubbles', action="store_false", dest="crush", help=" Crush the bubbles in the last MSR graph. WARNING - alpha testers only - [DEFAULT False]")
     
     parser.add_argument('-o', action="store", dest="out_dir",               type=str,   default=".",    help="path to store the results (default = .)")
     parser.add_argument('-k', action="store", dest="k_max",                 type=int,   default = 301,  help="an integer, largest k-mer size (default=301)")
@@ -391,7 +393,7 @@ def main():
     min_cov_SR          = options.min_cov_SR
     nb_correction_steps = options.nb_correction_steps
     nb_cores            = options.nb_cores
-    crush               = options.crush
+    dontcrush               = options.crush
     max_tip             = options.max_tip
     min_conflict_overlap= options.min_conflict_overlap
     
@@ -499,12 +501,15 @@ def main():
     #                          Graph construction and cleaning
     # ------------------------------------------------------------------------
     t = time.time()
-    valuesGraph = graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, "bankBcalm.txt", k_max, min_cov, min_cov_uni, min_cov_SR, toolsArgs, fileCase, nb_cores,max_tip, min_conflict_overlap,crush)
+    valuesGraph = graphConstruction(BWISE_MAIN, BWISE_INSTDIR, OUT_DIR, "bankBcalm.txt", k_max, min_cov, min_cov_uni, min_cov_SR, toolsArgs, fileCase, nb_cores,max_tip, min_conflict_overlap,dontcrush)
     print(printTime("Graph Construction took: ", time.time() - t))
 
+    
+    
 
-
-    print(printTime("\nThe end !\nBWISE assembly took: ", time.time() - wholeT))
+    print(printTime("BWISE assembly took: ", time.time() - wholeT))
+    print("Final assembly files are "+OUT_DIR+"/[crushed_]compacted_unitigs_k*.fa and "+OUT_DIR+"/[crushed_]compacted_unitigs_k*.gfa")
+    print("Contact information: bwise@inria.fr")
 
 
 
